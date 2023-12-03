@@ -1,5 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException
 from data import dataTest_create_a_forum as data
 
 import unittest
@@ -85,7 +86,7 @@ class MoodleTest(unittest.TestCase):
             
             forumBtn = self.driver.find_element(By.XPATH, "//div[@class=\"optionname clamp-2\" and contains(text(), \"Forum\")]")
             forumBtn.click()
-            time.sleep(1)
+            time.sleep(10)
         
         except:
             print("gotoForumCreation: FAILED")
@@ -97,7 +98,6 @@ class MoodleTest(unittest.TestCase):
                 return i
 
     def send_keys_TinyMCE(self, elementId = "", text = ""):
-        time.sleep(3)
         try:
             element = ""
             if "//iframe" in elementId:
@@ -114,7 +114,6 @@ class MoodleTest(unittest.TestCase):
             print("send_keys_TinyMCE: FAILED")
             assert False
 
-    # @unittest.skip('Completed')
     def test_0(self):
         index = self.getIndexData(0)
         self.gotoWeb(index)
@@ -140,7 +139,6 @@ class MoodleTest(unittest.TestCase):
           
             if created_forum_name == self.data[index].forum_name and created_forum_description == self.data[index].forum_description:
                 print("test_0: PASSED")
-                time.sleep(3)
                 self.driver.close()
                 assert True
                 return
@@ -153,8 +151,108 @@ class MoodleTest(unittest.TestCase):
             self.driver.close()
             assert False
    
-    def tearDown(self):
-        self.driver.quit()
+    def test_1(self):
+        index = self.getIndexData(1)
+        self.gotoWeb(index)
+        self.gotoCourse(index)
+
+        try:
+            self.gotoForumCreation(index)
+            
+            # Fill in name
+            nameInput = self.driver.find_element(By.XPATH, "//input[@id=\"id_name\"]")
+            nameInput.send_keys(self.data[index].forum_name)
+
+            submitBtn = self.driver.find_element(By.XPATH, "//input[@id=\"id_submitbutton\"]")
+            submitBtn.click()
+            time.sleep(3)
+
+            # Test
+            created_forum_name = self.driver.find_element(By.XPATH, "//h1").text
+            
+            # Check whether new forum has no description
+            try:
+                self.driver.find_element(By.XPATH, "//div[@id=\"intro\"]").text
+            except NoSuchElementException:
+                pass
+          
+            if created_forum_name == self.data[index].forum_name:
+                print("test_1: PASSED")
+                self.driver.close()
+                assert True
+                return
+            
+            print("test_1: FAILED")
+            self.driver.close()
+            assert False
+        except:
+            print("test_1: FAILED")
+            self.driver.close()
+            assert False
+
+    def test_2(self):
+        index = self.getIndexData(2)
+        self.gotoWeb(index)
+        self.gotoCourse(index)
+
+        try:
+            self.gotoForumCreation(index)
+
+            # Fill in name
+            nameInput = self.driver.find_element(By.XPATH, "//input[@id=\"id_name\"]")
+            nameInput.send_keys(self.data[index].forum_name)
+
+            # Fill in description
+            self.send_keys_TinyMCE("//iframe[@id='id_introeditor_ifr']", self.data[index].forum_description)
+
+            cancelBtn = self.driver.find_element(By.XPATH, "//input[@id=\"id_cancel\"]")
+            cancelBtn.click()
+            time.sleep(3)
+
+            # Test
+            currentUrl = self.driver.current_url
+            if "course/view" in currentUrl:
+                print("test_2: PASSED")
+                self.driver.close()
+                assert True
+                return
+            
+            print("test_2: FAILED")
+            self.driver.close()
+            assert False
+        except:
+            print("test_2: FAILED")
+            self.driver.close()
+            assert False
+    
+    def test_3(self):
+        index = self.getIndexData(3)
+        self.gotoWeb(index)
+        self.gotoCourse(index)
+
+        try:
+            self.gotoForumCreation(index)
+
+            # Fill in description
+            self.send_keys_TinyMCE("//iframe[@id='id_introeditor_ifr']", self.data[index].forum_description)
+
+            submitBtn = self.driver.find_element(By.XPATH, "//input[@id=\"id_submitbutton\"]")
+            submitBtn.click()
+            time.sleep(3)
+
+            # Test
+            self.driver.find_element(By.XPATH, "//*[@id=\"id_error_name\"]")
+            
+            print("test_3: PASSED")
+            self.driver.close()
+            assert True
+            return
+        
+        except:
+            print("test_3: FAILED")
+            self.driver.close()
+            assert False
+
 
 def main(out = sys.stderr, verbosity = 2): 
     loader = unittest.TestLoader() 
