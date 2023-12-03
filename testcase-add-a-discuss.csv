@@ -1,0 +1,5 @@
+test_case,url,username,password,course_name,discuss_subject,discuss_message
+0,https://school.moodledemo.net,teacher,moodle,Mindful course creation,Subject,Message
+1,https://school.moodledemo.net,teacher,moodle,Mindful course creation,Subject,Message
+2,https://school.moodledemo.net,teacher,moodle,Mindful course creation,,Message
+3,https://school.moodledemo.net,teacher,moodle,Mindful course creation,Subject,
