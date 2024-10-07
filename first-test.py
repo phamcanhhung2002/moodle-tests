@@ -5,7 +5,6 @@ from data import dataTest_create_a_forum as data
 
 import unittest
 import time
-# 11 -> November
 import sys
 
 
@@ -36,7 +35,8 @@ class MoodleTest(unittest.TestCase):
             username.send_keys(self.data[index].username)
             password.send_keys(self.data[index].password)
 
-            loginBtn = self.driver.find_element(By.XPATH, "//*[@id=\"loginbtn\"]").click()
+            loginBtn = self.driver.find_element(By.XPATH, "//*[@id=\"loginbtn\"]")
+            loginBtn.click()
 
         except:
             print("gotoWeb: FAILED")
@@ -52,11 +52,12 @@ class MoodleTest(unittest.TestCase):
             # Find the course
             courseSearch = self.driver.find_element(By.NAME, "search")
             courseSearch.send_keys(self.data[index].course_name)
-            time.sleep(3)
+
+            time.sleep(2)
 
             # Access to the course
             try:
-                courses = self.driver.find_elements(By.XPATH, "//a[@href and @class='aalink coursename mr-2 mb-1']")
+                courses = self.driver.find_elements(By.XPATH, "//a[@href and @class='aalink coursename me-2 mb-1']")
                 for element in courses:
                     if (self.data[index].course_name in element.get_attribute("innerHTML")):
                         element.click()
@@ -67,7 +68,7 @@ class MoodleTest(unittest.TestCase):
                 assert False
 
             # Enable editing mode
-            editToggle = self.driver.find_element('xpath', "//form[@class='d-flex align-items-center editmode-switch-form']")
+            editToggle = self.driver.find_element(By.XPATH, "//form[@class='d-flex align-items-center editmode-switch-form']")
             editToggle.click()
         
         except:
@@ -76,19 +77,24 @@ class MoodleTest(unittest.TestCase):
 
     def gotoForumCreation(self, index = 0):
         try:
-            addResourceBtn = self.driver.find_element(By.XPATH, "//*[@id=\"coursecontentcollapse0\"]/button")
-            addResourceBtn.click()
-            time.sleep(3)
+            addContentBtn = self.driver.find_element(By.XPATH, "//div[@id='coursecontentcollapse0']/div[last()]//button[@class='btn add-content d-flex justify-content-center align-items-center p-1 icon-no-margin']")
+            
+            self.driver.execute_script("scroll(0,600)")
+            time.sleep(1)
 
+            addContentBtn.click()
+
+            activityOrResourceBtn = self.driver.find_element(By.XPATH, "//div[@id='coursecontentcollapse0']/div[last()]//button[@class=\"section-modchooser section-modchooser-link dropdown-item\"]")
+            activityOrResourceBtn.click()
+            
             searchInput = self.driver.find_element(By.XPATH, "//input[@class=\"form-control withclear rounded\"]")
             searchInput.send_keys("Forum")
-            time.sleep(1)
             
             forumBtn = self.driver.find_element(By.XPATH, "//div[@class=\"optionname clamp-2\" and contains(text(), \"Forum\")]")
             forumBtn.click()
-            time.sleep(10)
         
-        except:
+        except Exception as e:
+            print(e)
             print("gotoForumCreation: FAILED")
             assert False
 
@@ -98,19 +104,28 @@ class MoodleTest(unittest.TestCase):
                 return i
 
     def send_keys_TinyMCE(self, elementId = "", text = ""):
+        time.sleep(5)
         try:
             element = ""
             if "//iframe" in elementId:
                 element = elementId
             else:
                 element = "//iframe[@id='{}']".format(elementId)
-            
-            iframeElement = self.driver.find_element(By.XPATH, element)
-            self.driver.switch_to.frame(frame_reference = iframeElement)
-            self.driver.find_element(By.XPATH, "//body[@id='tinymce']").send_keys(text)
-            self.driver.switch_to.default_content()
+
+            try:
+                iframeElement = self.driver.find_element(By.XPATH, element)
+
+                self.driver.switch_to.frame(frame_reference = iframeElement)
         
-        except:
+                self.driver.find_element(By.XPATH, "//body[@id='tinymce']").send_keys(text)
+                self.driver.switch_to.default_content()
+            except NoSuchElementException:
+                self.driver.find_element(By.XPATH, "//textarea[@id='id_introeditor']").send_keys(text)
+
+            self.driver.find_element(By.XPATH, "//input[@id='id_showdescription']").click()
+
+        except Exception as e:
+            print(e)
             print("send_keys_TinyMCE: FAILED")
             assert False
 
@@ -121,7 +136,7 @@ class MoodleTest(unittest.TestCase):
 
         try:
             self.gotoForumCreation(index)
-            
+
             # Fill in name
             nameInput = self.driver.find_element(By.XPATH, "//input[@id=\"id_name\"]")
             nameInput.send_keys(self.data[index].forum_name)
@@ -129,9 +144,10 @@ class MoodleTest(unittest.TestCase):
             # Fill in description
             self.send_keys_TinyMCE("//iframe[@id='id_introeditor_ifr']", self.data[index].forum_description)
 
+            time.sleep(3)
+
             submitBtn = self.driver.find_element(By.XPATH, "//input[@id=\"id_submitbutton\"]")
             submitBtn.click()
-            time.sleep(3)
 
             # Test
             created_forum_name = self.driver.find_element(By.XPATH, "//h1").text
@@ -146,7 +162,8 @@ class MoodleTest(unittest.TestCase):
             print("test_0: FAILED")
             self.driver.close()
             assert False
-        except:
+        except Exception as e:
+            print(e)
             print("test_0: FAILED")
             self.driver.close()
             assert False
@@ -163,9 +180,10 @@ class MoodleTest(unittest.TestCase):
             nameInput = self.driver.find_element(By.XPATH, "//input[@id=\"id_name\"]")
             nameInput.send_keys(self.data[index].forum_name)
 
+            time.sleep(3)
+
             submitBtn = self.driver.find_element(By.XPATH, "//input[@id=\"id_submitbutton\"]")
             submitBtn.click()
-            time.sleep(3)
 
             # Test
             created_forum_name = self.driver.find_element(By.XPATH, "//h1").text
@@ -173,19 +191,18 @@ class MoodleTest(unittest.TestCase):
             # Check whether new forum has no description
             try:
                 self.driver.find_element(By.XPATH, "//div[@id=\"intro\"]").text
-            except NoSuchElementException:
-                pass
-          
-            if created_forum_name == self.data[index].forum_name:
-                print("test_1: PASSED")
-                self.driver.close()
-                assert True
-                return
+            except NoSuchElementException:     
+                if created_forum_name == self.data[index].forum_name:
+                    print("test_1: PASSED")
+                    self.driver.close()
+                    assert True
+                    return
             
             print("test_1: FAILED")
             self.driver.close()
             assert False
-        except:
+        except Exception as e:
+            print(e)
             print("test_1: FAILED")
             self.driver.close()
             assert False
@@ -205,9 +222,10 @@ class MoodleTest(unittest.TestCase):
             # Fill in description
             self.send_keys_TinyMCE("//iframe[@id='id_introeditor_ifr']", self.data[index].forum_description)
 
+            time.sleep(3)
+
             cancelBtn = self.driver.find_element(By.XPATH, "//input[@id=\"id_cancel\"]")
             cancelBtn.click()
-            time.sleep(3)
 
             # Test
             currentUrl = self.driver.current_url
@@ -220,11 +238,12 @@ class MoodleTest(unittest.TestCase):
             print("test_2: FAILED")
             self.driver.close()
             assert False
-        except:
+        except Exception as e:
+            print(e)
             print("test_2: FAILED")
             self.driver.close()
             assert False
-    
+
     def test_3(self):
         index = self.getIndexData(3)
         self.gotoWeb(index)
@@ -236,9 +255,10 @@ class MoodleTest(unittest.TestCase):
             # Fill in description
             self.send_keys_TinyMCE("//iframe[@id='id_introeditor_ifr']", self.data[index].forum_description)
 
+            time.sleep(3)
+
             submitBtn = self.driver.find_element(By.XPATH, "//input[@id=\"id_submitbutton\"]")
             submitBtn.click()
-            time.sleep(3)
 
             # Test
             self.driver.find_element(By.XPATH, "//*[@id=\"id_error_name\"]")
@@ -248,7 +268,8 @@ class MoodleTest(unittest.TestCase):
             assert True
             return
         
-        except:
+        except Exception as e:
+            print(e)
             print("test_3: FAILED")
             self.driver.close()
             assert False
