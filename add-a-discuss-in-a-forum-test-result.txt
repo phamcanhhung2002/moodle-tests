@@ -1,9 +1,9 @@
-test_0 (__main__.MoodleTest.test_0) ... ok
-test_1 (__main__.MoodleTest.test_1) ... ok
-test_2 (__main__.MoodleTest.test_2) ... ok
-test_3 (__main__.MoodleTest.test_3) ... ok
+test_0 (__main__.MoodleTest) ... ok
+test_1 (__main__.MoodleTest) ... ok
+test_2 (__main__.MoodleTest) ... ok
+test_3 (__main__.MoodleTest) ... ok
 
 ----------------------------------------------------------------------
-Ran 4 tests in 150.113s
+Ran 4 tests in 101.536s
 
 OK

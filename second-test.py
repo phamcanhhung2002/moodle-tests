@@ -5,7 +5,6 @@ from data import dataTest_add_a_discuss as data
 
 import unittest
 import time
-# 11 -> November
 import sys
 
 
@@ -52,11 +51,11 @@ class MoodleTest(unittest.TestCase):
             # Find the course
             courseSearch = self.driver.find_element(By.NAME, "search")
             courseSearch.send_keys(self.data[index].course_name)
-            time.sleep(3)
+            time.sleep(1)
 
             # Access to the course
             try:
-                courses = self.driver.find_elements(By.XPATH, "//a[@href and @class='aalink coursename mr-2 mb-1']")
+                courses = self.driver.find_elements(By.XPATH, "//a[@href and @class='aalink coursename me-2 mb-1']")
                 for element in courses:
                     if (self.data[index].course_name in element.get_attribute("innerHTML")):
                         element.click()
@@ -72,10 +71,11 @@ class MoodleTest(unittest.TestCase):
 
     def gotoForum(self, index = 0):
         try:
-            forum = self.driver.find_element(By.XPATH, "//*[@class=\"activity-grid \"]/a")
+            forum = self.driver.find_element(By.XPATH, "//div[@id='coursecontentcollapse0']/ul/li[last()]//a")
             forum.click()
 
-        except NoSuchElementException:
+        except Exception as e:
+            print(e)
             print("gotoForum: FAILED")
             assert False
 
@@ -95,6 +95,7 @@ class MoodleTest(unittest.TestCase):
                 return i
 
     def send_keys_TinyMCE(self, elementId = "", text = ""):
+        time.sleep(5)
         try:
             element = ""
             if "//iframe" in elementId:
@@ -144,10 +145,9 @@ class MoodleTest(unittest.TestCase):
 
             # Fill in message
             self.send_keys_TinyMCE("//iframe[@id='id_message_ifr']", self.data[index].discuss_message)
-
+            
             submit_btn = self.driver.find_element(By.XPATH, "//input[@id=\"id_submitbutton\"]")
             submit_btn.click()
-            time.sleep(3)
 
             # Test
             self.checkNewDicuss(index)
